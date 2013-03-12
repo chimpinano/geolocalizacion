@@ -47,7 +47,7 @@ public class GeolocalizacionMain
 		StoreService service = new StoreService();
 		List<Store> ls = service.getStore();
 		
-		System.out.println("Numero tiendas:" + ls.size());
+		
 		
 		
 		for (Store store: ls)
@@ -59,11 +59,11 @@ public class GeolocalizacionMain
 			Geolocation g = main.getGeolocation(store.getProvince() ,  store.getCity(), store.getStreet_Name() , store.getStreet_Number());
 			if (g == null)
 			{
-				System.out.println("[Store no located] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
+				//System.out.println("[Store no located] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
 			}
 			else if ( !"OK".equals(g.getStatus()))
 			{
-				System.out.println("[Store status location error][" + g.getStatus() + "] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
+				//System.out.println("[Store status location error][" + g.getStatus() + "] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
 			}
 			else
 			{
@@ -100,7 +100,7 @@ public class GeolocalizacionMain
 					}
 					catch(Exception e)
 					{
-						System.out.println("[Store latitude/longitude error][" + e.getMessage()+ "] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
+						//System.out.println("[Store latitude/longitude error][" + e.getMessage()+ "] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
 					}
 					
 					
@@ -108,8 +108,8 @@ public class GeolocalizacionMain
 				
 				if ( latitud != null && longitud != null )
 				{
-					System.out.println("[Store]" +  store.getStreet_Number() + " " +  store.getStreet_Name()  + " " +  store.getCity() + " " + store.getProvince());
-					System.out.println("UPDATE dbo.shp_stores SET longitude = " +  longitud  + " , latitude = " + latitud + " WHERE id_store =103;");
+					//System.out.println("[Store]" +  store.getStreet_Number() + " " +  store.getStreet_Name()  + " " +  store.getCity() + " " + store.getProvince());
+					System.out.println("UPDATE dbo.shp_stores SET longitude = " +  longitud  + " , latitude = " + latitud + " WHERE id_store =" + store.getId_Store());
 					
 				}
 				
@@ -168,17 +168,17 @@ public class GeolocalizacionMain
 			connection.setDoOutput(true);
 			connection.setRequestProperty("Accept-Charset", charset);
 			
-			System.out.println("Requesting...[" + url + "?" + query + "]");
+			//System.out.println("Requesting...[" + url + "?" + query + "]");
             int codigo = connection.getResponseCode();
 			
 			 //200 OK
             if (codigo != HttpURLConnection.HTTP_OK)
             {
-            	System.out.println("****CODE ERROR[" + codigo + "][" + url + "?" + query + "]");		
+            	//System.out.println("****CODE ERROR[" + codigo + "][" + url + "?" + query + "]");		
                 throw new Exception("Response code error:" + codigo);
             }
 
-            System.out.println("Response OK [" + url + "?" + query + "]");
+            //System.out.println("Response OK [" + url + "?" + query + "]");
             br = new BufferedReader(new InputStreamReader(connection.getInputStream(),charset));
 			
             GeolocationBuilder gb = new GeolocationBuilderGS();
