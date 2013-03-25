@@ -2,6 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.prosodie</groupId>
   <artifactId>geolocalizacion</artifactId>
+  <packaging>jar</packaging>
   <version>0.0.1-SNAPSHOT</version>
   <description>Geolocalizacion mediante Google Maps API</description>
   
@@ -35,9 +36,75 @@
 	    <dependency>
 			<groupId>org.mybatis</groupId>
 			<artifactId>mybatis</artifactId>
-			<version>3.1.0</version>
+			<version>3.1.0</version>			
 		</dependency>
-	    
-	    
+		
+		 <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        
+
+
 	  </dependencies>
+	  
+	  <pluginRepositories>
+   		<pluginRepository>
+		      <id>apache-snapshots</id>
+		      <name>Apache SNAPSHOT Repository</name>
+		      <url>http://repository.apache.org/snapshots/</url>
+		      <snapshots>
+		         <enabled>true</enabled>
+		      </snapshots>
+   		</pluginRepository>
+	 </pluginRepositories> 
+            
+
+	<build>
+
+		<plugins>
+		
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<debug>false</debug>
+				</configuration>
+			</plugin>
+
+		
+		<plugin>
+			<artifactId>maven-jar-plugin</artifactId>
+			<version>2.4</version>
+			<configuration>
+				<archive>
+					<manifest>
+						<mainClass>com.prosodie.geolocalizacion.GeolocalizacionMain</mainClass>
+						<addClasspath>true</addClasspath>
+						<classpathPrefix>lib</classpathPrefix>
+					</manifest>
+				</archive>
+			</configuration>
+		</plugin>
+	
+			<!--  
+			<plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-eclipse-plugin</artifactId>
+                    <configuration>
+                        <projectNameTemplate>[artifactId]-[version]</projectNameTemplate>
+                        <wtpmanifest>true</wtpmanifest>
+                        <wtpapplicationxml>true</wtpapplicationxml>
+                        <wtpversion>2.0</wtpversion>
+                    </configuration>
+                </plugin>
+             -->
+		</plugins>
+
+	</build>        
+	 
 </project>

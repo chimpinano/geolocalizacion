@@ -21,6 +21,16 @@ http://universimmedia.pagesperso-orange.fr/geo/loc.htm
 */
 
 
+/*
+ * Use of the Google Geocoding API is subject to a query limit of 2,500 geolocation requests per day. 
+ * (User of Google Maps API for Business may perform up to 100,000 requests per day.) 
+ * This limit is enforced to prevent abuse and/or repurposing of the Geocoding API, 
+ * and this limit may be changed in the future without notice. Additionally,
+ *  we enforce a request rate limit to prevent abuse of the service. 
+ *  If you exceed the 24-hour limit or otherwise abuse the service, the Geocoding API may stop working for you temporarily. 
+ * If you continue to exceed this limit, your access to the Geocoding API may be blocked.
+ */
+
 public class GeolocalizacionMain
 {
 
@@ -109,7 +119,7 @@ public class GeolocalizacionMain
 				if ( latitud != null && longitud != null )
 				{
 					//System.out.println("[Store]" +  store.getStreet_Number() + " " +  store.getStreet_Name()  + " " +  store.getCity() + " " + store.getProvince());
-					System.out.println("UPDATE dbo.shp_stores SET longitude = " +  longitud  + " , latitude = " + latitud + " WHERE id_store =" + store.getId_Store());
+					System.out.println("UPDATE dbo.shp_stores SET longitude= " +  longitud  + " , latitude= " + latitud + " WHERE id_store=" + store.getId_Store());
 					
 				}
 				
