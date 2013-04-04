@@ -17,7 +17,7 @@ public class Store
 	private String city;
 	private String street_Name;
 	private String street_Number;
-	private String postal_Code;
+	private Integer postal_Code;
 	
 
 	public String getId_Store()
@@ -86,14 +86,15 @@ public class Store
 	{
 		this.street_Number = street_Number;
 	}
-	public String getPostal_Code()
+	public Integer getPostal_Code()
 	{
 		return postal_Code;
 	}
-	public void setPostal_Code(String postal_Code)
+	public void setPostal_Code(Integer postal_Code)
 	{
 		this.postal_Code = postal_Code;
-	} 
+	}
+	
 	
 	
 	

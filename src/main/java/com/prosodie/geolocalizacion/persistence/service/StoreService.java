@@ -41,7 +41,7 @@ public class StoreService
 
 		
 	
-	    public List<Store> getStore()
+	    public List<Store> getStore(int id)
 	    {	    	
 	    	
 	    	SqlSession session = sqlSessionFactory.openSession();
@@ -49,7 +49,7 @@ public class StoreService
 	    	{
 
 	    		StoreMapper mapper = session.getMapper(StoreMapper.class);
-	    		List<Store> l = mapper.getStore();
+	    		List<Store> l = mapper.getStore(id);
 
 	    		return l;
 

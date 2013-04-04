@@ -10,8 +10,8 @@ import com.prosodie.geolocalizacion.persistence.domain.Store;
 
 public interface StoreMapper
 {
-	@Select("SELECT TOP 1000 * FROM shp_stores WHERE latitude IS NULL OR longitude IS NULL")
-	public List<Store> getStore();
+	@Select("SELECT TOP 1000 * FROM shp_stores WHERE id_store > #{id} AND (latitude IS NULL OR longitude IS NULL)")
+	public List<Store> getStore(int id);
 
 }
 

@@ -6,7 +6,12 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.prosodie.geolocalizacion.bean.Geolocation;
 import com.prosodie.geolocalizacion.bean.Results;
@@ -55,71 +60,139 @@ public class GeolocalizacionMain
 		
 		
 		StoreService service = new StoreService();
-		List<Store> ls = service.getStore();
+		
+		Random random = new Random();
+		int id = random.nextInt(5500);
+		
+		List<Store> ls = service.getStore(id);
 		
 		
 		
 		
 		for (Store store: ls)
 		{
-			//System.out.println("[Store] Provincia" + store.getProvince() + "; Poblacion:" + store.getCity() + ";Calle:" + store.getStreet_Name() + ";Numero:" + store.getStreet_Number());
+			System.err.println("");
+			System.err.println("");
+			System.err.println("");
+			System.err.println("[Store] Provincia:" + store.getProvince() + "; Poblacion:" + store.getCity() + ";Calle:" + store.getStreet_Name() + ";Numero:" + store.getStreet_Number());
 			
 			
 			
-			Geolocation g = main.getGeolocation(store.getProvince() ,  store.getCity(), store.getStreet_Name() , store.getStreet_Number());
+			Geolocation g = main.getGeolocation(store.getProvince() ,  store.getCity(), store.getStreet_Name() , store.getStreet_Number(), store.getPostal_Code());
+			
+						
 			if (g == null)
 			{
-				//System.out.println("[Store no located] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
+				System.err.println("[Store no located] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
 			}
 			else if ( !"OK".equals(g.getStatus()))
 			{
-				//System.out.println("[Store status location error][" + g.getStatus() + "] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
+				System.err.println("[Store status location error][" + g.getStatus() + "] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
+				
+				if ("OVER_QUERY_LIMIT".equals(g.getStatus()))
+				{
+					System.out.println("[Store status location error][" + g.getStatus() + "] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
+					System.exit(0);	
+				}
 			}
 			else
 			{
 				List<Results> lr = g.getResults();
 				
+
 				String latitud = null;
 				String longitud = null;
+				String accuracy = null;
 				
-				for (Results r: lr)
+				if (lr != null)
 				{
-					try
+					
+					for (Results r: lr)
 					{
-						
-						if ( latitud != null && !latitud.equals(r.getGeometry().getLocation().getLat()) )
+						try
 						{
-							latitud = null;
-							longitud = null;
 							
-							continue;
+		
+							/*
+							"ROOFTOP" indicates that the returned result is a precise geocode for which we have location information accurate down to street address precision.
+							"RANGE_INTERPOLATED" indicates that the returned result reflects an approximation (usually on a road) interpolated between two precise points (such as intersections). Interpolated results are generally returned when rooftop geocodes are unavailable for a street address.
+							"GEOMETRIC_CENTER" indicates that the returned result is the geometric center of a result such as a polyline (for example, a street) or polygon (region).
+							"APPROXIMATE" indicates that the returned result is approximate.
+							 */
+							if (!"ROOFTOP".equals(r.getGeometry().getLocation_type()) && !"RANGE_INTERPOLATED".equals(r.getGeometry().getLocation_type()) && !"APPROXIMATE".equals(r.getGeometry().getLocation_type()))
+							{
+								System.err.println("[Store location accuracy][" + r.getGeometry().getLocation_type() + "] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
+								continue;
+							}
+							else if ("APPROXIMATE".equals(r.getGeometry().getLocation_type()))
+							{
+
+								if (Pattern.compile(".*S/N.*").matcher(store.getStreet_Number()).matches() && Pattern.compile(".*CC\\s.*|.*C\\.C\\..*|.*CC\\..*").matcher(store.getStreet_Number()).matches())
+								{
+									// CENTRO COMERCIAL SIN NUMERO
+									System.err.println("[Store location CENTRO COMERCIAL][" + r.getGeometry().getLocation_type() + "] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
+									continue;
+									
+								}
+									
+																
+							}
+							
+							
+							if (latitud != null && longitud != null && accuracy != null)
+							{
+								
+								if (accuracy.equals(r.getGeometry().getLocation_type()))
+								{
+									latitud = null;
+									longitud = null;
+									accuracy = null;
+									
+									System.err.println("<<<<<<<<<<Store multiple accuracy >>>>>>>>>>> Size:" +  lr.size() + ";Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
+									break;
+								}
+								else if ("ROOFTOP".equals(accuracy) && !"ROOFTOP".equals(r.getGeometry().getLocation_type()))
+								{
+									continue;
+								}
+								else if ("RANGE_INTERPOLATED".equals(accuracy) && "APPROXIMATE".equals(r.getGeometry().getLocation_type()))
+								{
+									continue;
+								}
+								
+							}
+								
+								
+							
+							latitud = String.valueOf(r.getGeometry().getLocation().getLat());
+													
+							longitud = String.valueOf(r.getGeometry().getLocation().getLng());	
+							
+							accuracy = r.getGeometry().getLocation_type();
+							
+							System.err.println("[Store location setting] latitude [" + latitud + "] longitude [" + longitud + "] accuracy[" +  accuracy + "]");
+							
+								
+						}
+						catch(Exception e)
+						{
+							System.err.println("[Store latitude/longitude error][" + e.getMessage()+ "] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
 						}
 						
-						latitud = String.valueOf(r.getGeometry().getLocation().getLat());
-					
-						if ( longitud != null && !longitud.equals(r.getGeometry().getLocation().getLng()) )
-						{
-							latitud = null;
-							longitud = null;
-							
-							continue;
-						}
 						
-						longitud = String.valueOf(r.getGeometry().getLocation().getLng());	
-							
 					}
-					catch(Exception e)
-					{
-						//System.out.println("[Store latitude/longitude error][" + e.getMessage()+ "] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
-					}
-					
+				}
+				else
+				{
 					
 				}
 				
-				if ( latitud != null && longitud != null )
+				if ( latitud != null && longitud != null && accuracy != null )
 				{
-					//System.out.println("[Store]" +  store.getStreet_Number() + " " +  store.getStreet_Name()  + " " +  store.getCity() + " " + store.getProvince());
-					System.out.println("UPDATE dbo.shp_stores SET longitude= " +  longitud  + " , latitude= " + latitud + " WHERE id_store=" + store.getId_Store());
+					System.err.println("*****[UPDATED]*******");
+					System.out.println("DELETE FROM dbo.tmp_shp_location_accuracy WHERE id_store = " + store.getId_Store() + ";");
+					System.out.println("INSERT INTO dbo.tmp_shp_location_accuracy(id_store, accuracy) VALUES(" + store.getId_Store()+ ",'" + accuracy + "');");
+					System.out.println("UPDATE dbo.shp_stores SET longitude= " +  longitud  + " , latitude= " + latitud + " WHERE id_store=" + store.getId_Store() + ";");
 					
 				}
 				
@@ -132,33 +205,11 @@ public class GeolocalizacionMain
 		}
 		
 		
-		// Provincia:ALICANTE; Poblacion:ALICANTE-ALACANT;Calle:MAISONNAVE, AVD;Numero:33
-		/*
-		String provincia ="ALICANTE";
-		String poblacion ="ALICANTE-ALACANT";
-		String calle = "MAISONNAVE, AVD";
-		String numero ="33";
-		Geolocation g = main.getGeolocation(provincia ,  poblacion, calle , numero);
-		
-		if (g == null )			
-			System.out.println("[Store] Error");
-		else
-		{
-			
-			System.out.println("[Store] Status:" + g.getStatus());
-		}
-		*/
-		
-		
-		
-		
-		
-		
-		
 	}
 	
+
 	
-	private Geolocation getGeolocation(String provincia, String poblacion, String calle, String numero)
+	private Geolocation getGeolocation(String provincia, String poblacion, String calle, String numero, Integer cp)
 	{
 		
 		 BufferedReader br = null;
@@ -167,9 +218,120 @@ public class GeolocalizacionMain
 		try
 		{
 			String sensor = "false";
-			String direccion = numero + "," + calle + "," + poblacion  + "," + provincia; 
 			
-			String query = String.format("address=%s&sensor=%s", URLEncoder.encode(direccion, charset), URLEncoder.encode(sensor, charset));
+			
+			// PROVINCIA
+			
+			if ("PALMAS DE GRAN CANARIA, LAS".equals(provincia))
+			{
+				provincia = "LAS PALMAS DE GRAN CANARIA";
+			}
+			else if ("CORUÑA, LA".equals(provincia))
+			{
+				provincia = "LA CORUÑA";
+			}
+			else if ("RIOJA, LA".equals(provincia))
+			{
+				provincia = "LA RIOJA";
+			}
+
+			
+			// CALLE
+			
+			
+			calle = calle.replaceAll("\\sKALEA,", ",");
+			
+			
+			Map<String,String> h = new HashMap<String,String>();
+			
+			
+			h.put("CL",  "CALLE");
+			h.put("AVD", "AVENIDA");
+			h.put("CRA", "CARRETERA");
+			h.put("URB", "URBANIZACION"); 
+			h.put("PSO", "PSO");
+			h.put("RAM", "RAM");
+			h.put("ARR", "ARR");  
+			h.put("POL", "POL"); 
+			h.put("PJE", "PJE"); 
+			h.put("MAS", "MAS"); 
+			h.put("RDA", "RDA"); 
+			h.put("PDA", "PDA"); 
+			h.put("CNO", "CNO"); 
+			h.put("BO",  "BO"); 
+			h.put("BDA", "BDA"); 
+			
+			
+			for (String k: h.keySet())
+			{
+				if ( calle.matches(".+,\\s" + k + "$"))
+				{
+					calle = h.get(k) + " " + calle;
+					break;
+				}
+			}
+			
+				
+			
+			calle = calle.replaceAll(",\\s\\w+$", "");
+			calle = calle.replaceAll(",", " ");
+			
+			
+			// NUMERO
+			
+			
+			if (Pattern.compile(".*KM.*").matcher(numero).matches())
+			{
+				System.err.println("Street number KM [" + numero + "]");
+				return null;
+				
+				
+			}
+			else if (Pattern.compile(".*S/N.*").matcher(numero).matches())
+			{
+				System.err.println("Street number [" + numero + "]->[S/N]");
+				numero = null;
+				
+				
+			}
+			else
+			{
+				Matcher m = Pattern.compile("^([0-9]+).*").matcher(numero);
+				if (m.matches())
+				{
+					numero = m.group(1);
+					
+				}
+				else
+				{
+					System.err.println("Weird street number...[" + numero + "]");
+					return null;
+				}
+			}
+			
+			
+			//CP
+			
+			String pc = String.format("%05d", cp);
+			
+			if (calle == null || poblacion == null || provincia == null || pc == null)
+			{
+				System.err.println("Missing required field");
+				return null;
+			}
+			
+	
+			
+			// METODO A
+			String direccion = calle + "," + poblacion  + "," + provincia + ",ESPAÑA";
+			
+			if (numero != null)
+			{
+				direccion = numero + "," + direccion;
+			}
+			
+			
+			String query = String.format("address=%s&components=postal_code:" +  pc + "|country:ES&sensor=%s", URLEncoder.encode(direccion, charset), URLEncoder.encode(sensor, charset));
 			
 			connection = (HttpURLConnection)(new URL(url + "?" + query).openConnection());
 			
@@ -178,17 +340,19 @@ public class GeolocalizacionMain
 			connection.setDoOutput(true);
 			connection.setRequestProperty("Accept-Charset", charset);
 			
-			//System.out.println("Requesting...[" + url + "?" + query + "]");
+			System.err.println("Requesting...[" + url + "?" + query + "]");
+			
+						
             int codigo = connection.getResponseCode();
 			
 			 //200 OK
             if (codigo != HttpURLConnection.HTTP_OK)
             {
-            	//System.out.println("****CODE ERROR[" + codigo + "][" + url + "?" + query + "]");		
+            	System.err.println("****CODE ERROR[" + codigo + "][" + url + "?" + query + "]");		
                 throw new Exception("Response code error:" + codigo);
             }
 
-            //System.out.println("Response OK [" + url + "?" + query + "]");
+            System.err.println("Response OK [" + url + "?" + query + "]");
             br = new BufferedReader(new InputStreamReader(connection.getInputStream(),charset));
 			
             GeolocationBuilder gb = new GeolocationBuilderGS();
@@ -203,6 +367,7 @@ public class GeolocalizacionMain
 		catch(Exception e)
 		{
 				
+			e.printStackTrace();
 			return null;
 			
 		}
