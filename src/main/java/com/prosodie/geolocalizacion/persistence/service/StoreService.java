@@ -61,9 +61,45 @@ public class StoreService
 	    	
 	    }
 	    
-	   
+	    public List<String> getProvince()
+	    {	    	
+	    	
+	    	SqlSession session = sqlSessionFactory.openSession();
+	    	try 
+	    	{
 
-	    
+	    		StoreMapper mapper = session.getMapper(StoreMapper.class);
+	    		List<String> l = mapper.getProvince();
+
+	    		return l;
+
+	    	} 
+	    	finally 
+	    	{
+	    		session.close();
+	    	}
+	    	
+	    }
+
+	    public List<String> getCP(String province)
+	    {	    	
+	    	
+	    	SqlSession session = sqlSessionFactory.openSession();
+	    	try 
+	    	{
+
+	    		StoreMapper mapper = session.getMapper(StoreMapper.class);
+	    		List<String> l = mapper.getCP(province);
+
+	    		return l;
+
+	    	} 
+	    	finally 
+	    	{
+	    		session.close();
+	    	}
+	    	
+	    }
 	    
 }
 

@@ -38,10 +38,17 @@ http://universimmedia.pagesperso-orange.fr/geo/loc.htm
 
 public class GeolocalizacionMain
 {
+	
+	
 
 	private final String url = "http://maps.googleapis.com/maps/api/geocode/json";
-	
 	private final String charset = "UTF-8";
+	
+	
+	private final static String ROOFTOP = "ROOFTOP";
+	private final static String RANGE_INTERPOLATED = "RANGE_INTERPOLATED";
+	private final static String APPROXIMATE = "APPROXIMATE";
+
 	
 	
 	public GeolocalizacionMain()
@@ -62,7 +69,9 @@ public class GeolocalizacionMain
 		StoreService service = new StoreService();
 		
 		Random random = new Random();
-		int id = random.nextInt(5500);
+		int id = random.nextInt(7000);
+		if (id > 6000)
+			id = 0;
 		
 		List<Store> ls = service.getStore(id);
 		
@@ -114,48 +123,34 @@ public class GeolocalizacionMain
 							
 		
 							/*
-							"ROOFTOP" indicates that the returned result is a precise geocode for which we have location information accurate down to street address precision.
-							"RANGE_INTERPOLATED" indicates that the returned result reflects an approximation (usually on a road) interpolated between two precise points (such as intersections). Interpolated results are generally returned when rooftop geocodes are unavailable for a street address.
-							"GEOMETRIC_CENTER" indicates that the returned result is the geometric center of a result such as a polyline (for example, a street) or polygon (region).
-							"APPROXIMATE" indicates that the returned result is approximate.
+							ROOFTOP indicates that the returned result is a precise geocode for which we have location information accurate down to street address precision.
+							ACCURACY_RANGE_INTERPOLATED indicates that the returned result reflects an approximation (usually on a road) interpolated between two precise points (such as intersections). Interpolated results are generally returned when rooftop geocodes are unavailable for a street address.
+							GEOMETRIC_CENTER indicates that the returned result is the geometric center of a result such as a polyline (for example, a street) or polygon (region).
+							APPROXIMATE indicates that the returned result is approximate.
 							 */
-							if (!"ROOFTOP".equals(r.getGeometry().getLocation_type()) && !"RANGE_INTERPOLATED".equals(r.getGeometry().getLocation_type()) && !"APPROXIMATE".equals(r.getGeometry().getLocation_type()))
+							if (!ROOFTOP.equals(r.getGeometry().getLocation_type()) && !RANGE_INTERPOLATED.equals(r.getGeometry().getLocation_type()) && !APPROXIMATE.equals(r.getGeometry().getLocation_type()))
 							{
 								System.err.println("[Store location accuracy][" + r.getGeometry().getLocation_type() + "] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
 								continue;
 							}
-							else if ("APPROXIMATE".equals(r.getGeometry().getLocation_type()))
-							{
-
-								if (Pattern.compile(".*S/N.*").matcher(store.getStreet_Number()).matches() && Pattern.compile(".*CC\\s.*|.*C\\.C\\..*|.*CC\\..*").matcher(store.getStreet_Number()).matches())
-								{
-									// CENTRO COMERCIAL SIN NUMERO
-									System.err.println("[Store location CENTRO COMERCIAL][" + r.getGeometry().getLocation_type() + "] Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
-									continue;
-									
-								}
-									
-																
-							}
 							
 							
-							if (latitud != null && longitud != null && accuracy != null)
+							if (accuracy != null)
 							{
 								
 								if (accuracy.equals(r.getGeometry().getLocation_type()))
 								{
 									latitud = null;
 									longitud = null;
-									accuracy = null;
-									
-									System.err.println("<<<<<<<<<<Store multiple accuracy >>>>>>>>>>> Size:" +  lr.size() + ";Provincia:" + store.getProvince().trim() + "; Poblacion:" + store.getCity().trim() + ";Calle:" + store.getStreet_Name().trim() + ";Numero:" + store.getStreet_Number().trim());
-									break;
+
+									System.err.println("Store multiple accuracy ["  + accuracy + "]");
+									continue;
 								}
-								else if ("ROOFTOP".equals(accuracy) && !"ROOFTOP".equals(r.getGeometry().getLocation_type()))
+								else if (ROOFTOP.equals(accuracy) && !ROOFTOP.equals(r.getGeometry().getLocation_type()))
 								{
 									continue;
 								}
-								else if ("RANGE_INTERPOLATED".equals(accuracy) && "APPROXIMATE".equals(r.getGeometry().getLocation_type()))
+								else if (RANGE_INTERPOLATED.equals(accuracy) && APPROXIMATE.equals(r.getGeometry().getLocation_type()))
 								{
 									continue;
 								}
@@ -238,7 +233,8 @@ public class GeolocalizacionMain
 			
 			// CALLE
 			
-			
+			calle = calle.trim();
+		
 			calle = calle.replaceAll("\\sKALEA,", ",");
 			
 			
@@ -248,7 +244,8 @@ public class GeolocalizacionMain
 			h.put("CL",  "CALLE");
 			h.put("AVD", "AVENIDA");
 			h.put("CRA", "CARRETERA");
-			h.put("URB", "URBANIZACION"); 
+			h.put("PZA", "PLAZA"); 
+			h.put("BDA", "BDA"); 
 			h.put("PSO", "PSO");
 			h.put("RAM", "RAM");
 			h.put("ARR", "ARR");  
@@ -260,18 +257,45 @@ public class GeolocalizacionMain
 			h.put("CNO", "CNO"); 
 			h.put("BO",  "BO"); 
 			h.put("BDA", "BDA"); 
+			h.put("LUG", "LUG"); 
+			h.put("PRL", "PRL"); 
+			h.put("PQE", "PQE"); 
+			h.put("TRV", "TRV"); 
 			
 			
-			for (String k: h.keySet())
+		
+			
+			
+			
+			Matcher m1 = Pattern.compile(".+,\\s(\\w+)$").matcher(calle);
+			if ( m1.matches())
 			{
-				if ( calle.matches(".+,\\s" + k + "$"))
+				String tipo = m1.group(1);
+				if ("CRA".equals(tipo))
 				{
-					calle = h.get(k) + " " + calle;
-					break;
+					System.err.println("[Store location CARRETERA][" + calle + "]");
+					return null;
 				}
+				else
+				{
+					if (h.containsKey(tipo))
+					{
+						calle = h.get(tipo) + " " + calle;
+					}
+					else
+					{
+						calle =  tipo + " " + calle;
+					}
+				}
+				
+				
+			}
+			else
+			{
+				System.err.println("[Store location MISSING STREET TYPE][" + calle + "]");
+				return null;
 			}
 			
-				
 			
 			calle = calle.replaceAll(",\\s\\w+$", "");
 			calle = calle.replaceAll(",", " ");
@@ -279,27 +303,38 @@ public class GeolocalizacionMain
 			
 			// NUMERO
 			
+			numero = numero.trim();
 			
 			if (Pattern.compile(".*KM.*").matcher(numero).matches())
 			{
 				System.err.println("Street number KM [" + numero + "]");
 				return null;
-				
-				
+	
 			}
-			else if (Pattern.compile(".*S/N.*").matcher(numero).matches())
+			
+			
+			if (Pattern.compile(".*S/N.*").matcher(numero).matches())
 			{
-				System.err.println("Street number [" + numero + "]->[S/N]");
-				numero = null;
+				if (Pattern.compile(".*CC\\s.*|.*C\\.C\\..*|.*CC\\..*").matcher(numero).matches())
+				{
+					// CENTRO COMERCIAL SIN NUMERO
+					System.err.println("[Store location CENTRO COMERCIAL][" + numero + "]");
+					return null;
+				}
+				else
+				{
+					System.err.println("Street number [" + numero + "]->[S/N]");
+					numero = null;
+				}
 				
-				
+			
 			}
 			else
 			{
-				Matcher m = Pattern.compile("^([0-9]+).*").matcher(numero);
-				if (m.matches())
+				Matcher m2 = Pattern.compile("^([0-9]+).*").matcher(numero);
+				if (m2.matches())
 				{
-					numero = m.group(1);
+					numero = m2.group(1);
 					
 				}
 				else
@@ -308,6 +343,10 @@ public class GeolocalizacionMain
 					return null;
 				}
 			}
+			
+			
+			if (numero != null)
+				numero = numero.replaceAll(",", " ");
 			
 			
 			//CP

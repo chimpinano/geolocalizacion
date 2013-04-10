@@ -1,15 +1,23 @@
 package com.prosodie.geolocalizacion.persistence.domain;
 
+import java.io.Serializable;
+
 
 /*
  * Clase que modela la tabla correspondiente a tiendas
  * 
+ * Nota: Debe ser serializable si se pretende que sea cacheado
+ * 
  */
 
-public class Store
+public class Store implements Serializable
 {
 
-	private String id_Store;
+
+	private static final long serialVersionUID = 1L;
+	
+	
+	private Integer id_Store;
 	private String name;
 	private String phoneNumber;
 	private String email;
@@ -19,16 +27,20 @@ public class Store
 	private String street_Number;
 	private Integer postal_Code;
 	
+	private Double latitude;
+	private Double longitude; 
+	
+	
+	
 
-	public String getId_Store()
+	public Integer getId_Store()
 	{
 		return id_Store;
 	}
-	public void setId_Store(String id_Store)
+	public void setId_Store(Integer id_Store)
 	{
 		this.id_Store = id_Store;
 	}
-	
 	public String getName()
 	
 	{
@@ -94,10 +106,24 @@ public class Store
 	{
 		this.postal_Code = postal_Code;
 	}
+	public Double getLatitude()
+	{
+		return latitude;
+	}
+	public void setLatitude(Double latitude)
+	{
+		this.latitude = latitude;
+	}
+	public Double getLongitude()
+	{
+		return longitude;
+	}
+	public void setLongitude(Double longitude)
+	{
+		this.longitude = longitude;
+	}
 	
-	
-	
-	
+		
 	
 	
 	
