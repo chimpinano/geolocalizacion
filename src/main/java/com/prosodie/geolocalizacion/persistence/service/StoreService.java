@@ -41,7 +41,7 @@ public class StoreService
 
 		
 	
-	    public List<Store> getStore(int id)
+	    public List<Store> getStore(int start,  int length, boolean scan)
 	    {	    	
 	    	
 	    	SqlSession session = sqlSessionFactory.openSession();
@@ -49,9 +49,16 @@ public class StoreService
 	    	{
 
 	    		StoreMapper mapper = session.getMapper(StoreMapper.class);
-	    		List<Store> l = mapper.getStore(id);
-
-	    		return l;
+	    		
+	    		if (scan)
+	    		{
+	    			return mapper.getStoreA(start, length);
+	    		}
+	    		else
+	    		{
+	    			return mapper.getStoreL(start, length);
+	    		}
+	    		
 
 	    	} 
 	    	finally 
@@ -60,7 +67,28 @@ public class StoreService
 	    	}
 	    	
 	    }
+	
 	    
+	    public int getStoreCount()
+	    {	    	
+	    	
+	    	SqlSession session = sqlSessionFactory.openSession();
+	    	try 
+	    	{
+
+	    		StoreMapper mapper = session.getMapper(StoreMapper.class);
+	    		int n = mapper.getStoreCount();
+
+	    		return n;
+
+	    	} 
+	    	finally 
+	    	{
+	    		session.close();
+	    	}
+	    	
+	    }
+	   
 	    public List<String> getProvince()
 	    {	    	
 	    	
@@ -100,6 +128,7 @@ public class StoreService
 	    	}
 	    	
 	    }
+	    
 	    
 }
 

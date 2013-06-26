@@ -30,6 +30,8 @@ public class Store implements Serializable
 	private Double latitude;
 	private Double longitude; 
 	
+	private String accuracy;
+	
 	
 	
 
@@ -122,8 +124,15 @@ public class Store implements Serializable
 	{
 		this.longitude = longitude;
 	}
-	
-		
+
+	public String getAccuracy()
+	{
+		return accuracy;
+	}
+	public void setAccuracy(String accuracy)
+	{
+		this.accuracy = accuracy;
+	}	
 	
 	
 	
