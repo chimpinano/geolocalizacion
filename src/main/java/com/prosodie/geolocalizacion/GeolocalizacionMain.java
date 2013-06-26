@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,16 +128,16 @@ public class GeolocalizacionMain
 				else if ("-p".equals(a[i]))
 				{
 
-					if (!Arrays.asList(ACCURACY.values()).contains(ACCURACY.valueOf(a[i+1])))
-					{
-						System.err.println("Precision no valida [ROOFTOP,RANGE_INTERPOLATED,APPROXIMATE]");
-						System.exit(0);
-					}
-					else
-					{
-						top = ACCURACY.valueOf(a[i+1]);
-					}
-					
+						try
+						{
+							top = ACCURACY.valueOf(a[i+1]);
+						}
+						catch(IllegalArgumentException e)
+						{
+							System.err.println("Precision no valida [ROOFTOP,RANGE_INTERPOLATED,APPROXIMATE]");
+							System.exit(0);
+						}
+				
 				}
 				
 			}
@@ -466,7 +465,7 @@ public class GeolocalizacionMain
 				else
 				{
 					System.err.println("Street number [" + numero + "]->[S/N]");
-					numero = null;
+					return null;
 				}
 				
 			
